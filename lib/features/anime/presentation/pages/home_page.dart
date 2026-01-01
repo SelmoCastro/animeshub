@@ -10,6 +10,7 @@ import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dar
 import 'package:animes_hub/features/tracking/presentation/pages/my_list_page.dart';
 import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
 import 'package:animes_hub/features/anime/presentation/widgets/anime_section_list.dart';
+import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
