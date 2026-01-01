@@ -1,0 +1,51 @@
+import 'package:animes_hub/features/anime/data/datasources/anime_remote_datasource.dart';
+import 'package:animes_hub/features/anime/domain/entities/anime.dart';
+import 'package:animes_hub/features/anime/domain/repositories/anime_repository.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'anime_repository_impl.g.dart';
+
+@riverpod
+AnimeRepository animeRepository(AnimeRepositoryRef ref) {
+  return AnimeRepositoryImpl(ref.watch(animeRemoteDataSourceProvider));
+}
+
+class AnimeRepositoryImpl implements AnimeRepository {
+  final AnimeRemoteDataSource _dataSource;
+
+  AnimeRepositoryImpl(this._dataSource);
+
+  @override
+  Future<List<Anime>> getSeasonalAnimes() async {
+    final models = await _dataSource.getSeasonalAnimes();
+    return models
+        .map((model) => Anime(
+              malId: model.malId,
+              title: model.title,
+              imageUrl: model.images.jpg.imageUrl ?? '',
+              largeImageUrl: model.images.jpg.largeImageUrl ?? '',
+              score: model.score,
+              synopsis: model.synopsis,
+              genres: model.genres.map((g) => g.name).toList(),
+              trailerUrl: model.trailer?.url,
+            ))
+        .toList();
+  }
+
+  @override
+  Future<List<Anime>> searchAnimes(String query) async {
+    final models = await _dataSource.searchAnimes(query);
+    return models
+        .map((model) => Anime(
+              malId: model.malId,
+              title: model.title,
+              imageUrl: model.images.jpg.imageUrl ?? '',
+              largeImageUrl: model.images.jpg.largeImageUrl ?? '',
+              score: model.score,
+              synopsis: model.synopsis,
+              genres: model.genres.map((g) => g.name).toList(),
+              trailerUrl: model.trailer?.url,
+            ))
+        .toList();
+  }
+}
