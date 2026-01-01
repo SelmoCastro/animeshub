@@ -19,8 +19,13 @@ RUN flutter config --enable-web
 WORKDIR /app
 COPY . .
 
-# Obter dependências e buildar para web
+# Obter dependências
 RUN flutter pub get
+
+# Gerar arquivos de código (Freezed/JSON Serializable)
+RUN dart run build_runner build --delete-conflicting-outputs
+
+# Buildar para web
 RUN flutter build web --release
 
 # Estágio 2: Servir com Nginx
