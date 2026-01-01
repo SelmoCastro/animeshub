@@ -1,5 +1,6 @@
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
+import 'package:animes_hub/features/anime/presentation/pages/see_all_page.dart';
 import 'package:animes_hub/features/anime/presentation/widgets/anime_card.dart';
 import 'package:flutter/material.dart';
 
@@ -20,15 +21,33 @@ class AnimeSectionList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Text(
-            title.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.2,
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SeeAllPage(title: title, animes: animes),
+              ),
+            );
+          },
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios,
+                    color: Colors.white, size: 16),
+              ],
             ),
           ),
         ),
