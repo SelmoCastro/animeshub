@@ -1,5 +1,6 @@
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
+import 'package:animes_hub/features/tracking/domain/repositories/tracking_repository.dart';
 import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
