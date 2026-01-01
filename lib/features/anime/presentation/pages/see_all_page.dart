@@ -28,11 +28,11 @@ class SeeAllPage extends StatelessWidget {
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.7,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 180, // Garante que o card nunca fique gigante
+          childAspectRatio: 0.68,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
         ),
         itemCount: animes.length,
         itemBuilder: (context, index) {
