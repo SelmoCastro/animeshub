@@ -107,8 +107,11 @@ class DetailsPage extends ConsumerWidget {
     final currentStatusAsync = ref.watch(trackingStatusProvider(anime.malId));
 
     return Scaffold(
+      backgroundColor: Colors.black,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showStatusSelector(context, ref),
+        backgroundColor: const Color(0xFFBB86FC),
+        foregroundColor: Colors.black,
         icon: currentStatusAsync.when(
           data: (status) => Icon(
             status != null ? _getIconForStatus(status) : Icons.add,
@@ -116,55 +119,66 @@ class DetailsPage extends ConsumerWidget {
           loading: () => const SizedBox(
             width: 24,
             height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
           ),
           error: (_, __) => const Icon(Icons.error),
         ),
         label: currentStatusAsync.when(
-          data: (status) => Text(status?.label ?? 'Adicionar'),
+          data: (status) => Text(status?.label ?? 'Adicionar à Lista', style: const TextStyle(fontWeight: FontWeight.bold)),
           loading: () => const Text('Carregando...'),
           error: (_, __) => const Text('Erro'),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 400.0,
-            floating: false,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                anime.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 10)],
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: anime.largeImageUrl.isNotEmpty
-                        ? anime.largeImageUrl
-                        : anime.imageUrl,
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black87],
-                        stops: [0.6, 1.0],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      body: Stack(
+        children: [
+          // Global Space Background
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/background.png',
+              fit: BoxFit.cover,
             ),
           ),
+          Positioned.fill(child: Container(color: Colors.black.withOpacity(0.4))),
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 400.0,
+                floating: false,
+                pinned: true,
+                backgroundColor: Colors.transparent,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(
+                    anime.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      shadows: [Shadow(color: Colors.black, blurRadius: 15)],
+                    ),
+                  ),
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: anime.largeImageUrl.isNotEmpty
+                            ? anime.largeImageUrl
+                            : anime.imageUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black87],
+                            stops: [0.6, 1.0],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
