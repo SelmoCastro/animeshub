@@ -1,7 +1,6 @@
 import 'package:animes_hub/features/anime/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -19,7 +18,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        textTheme: GoogleFonts.outfitTextTheme(),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -30,7 +28,6 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
         useMaterial3: true,
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF121212),
           surfaceTintColor: Colors.transparent,
