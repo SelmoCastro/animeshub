@@ -1,9 +1,9 @@
 # Estágio 1: Build da aplicação Flutter
 FROM debian:latest AS build-env
 
-# Instalar dependências necessárias para o Flutter
+# Instalar dependências necessárias para o Flutter (focado em Web)
 RUN apt-get update && \
-    apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3 && \
+    apt-get install -y curl git wget unzip ca-certificates && \
     apt-get clean
 
 # Clonar o Flutter SDK
