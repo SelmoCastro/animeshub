@@ -115,9 +115,9 @@ class HomePage extends ConsumerWidget {
                       .map((m) => Anime(
                             malId: m.malId,
                             title: m.title,
-                            imageUrl: m.imageUrl,
-                            largeImageUrl: m
-                                .imageUrl, // Hive model não salva a large, usa a mesma
+                            imageUrl: m.imageUrl ?? '',
+                            largeImageUrl: m.imageUrl ??
+                                '', // Hive model não salva a large, usa a mesma
                             streamingLinks: [],
                             genres: [],
                           ))
