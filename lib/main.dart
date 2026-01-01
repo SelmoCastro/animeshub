@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        fontFamily: 'Outfit',
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -27,7 +28,9 @@ class MyApp extends StatelessWidget {
           surface: const Color(0xFF121212),
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color(0xFF121212),
         useMaterial3: true,
+        fontFamily: 'Outfit',
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF121212),
           surfaceTintColor: Colors.transparent,
