@@ -263,36 +263,41 @@ class DetailsPage extends ConsumerWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.search),
-                        label: const Text('Google'),
-                        onPressed: () async {
-                          final query = Uri.encodeComponent(
-                              'assistir ${anime.title} online');
-                          final uri = Uri.parse(
-                              'https://www.google.com/search?q=$query');
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        },
+                      _buildSearchButton(
+                        context,
+                        label: 'Google',
+                        icon: Icons.search,
+                        url: 'https://www.google.com/search?q=',
+                        query: 'assistir ${anime.title} online',
                       ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.video_library),
-                        label: const Text('YouTube'),
-                        onPressed: () async {
-                          final query = Uri.encodeComponent(
-                              '${anime.title} trailer review');
-                          final uri = Uri.parse(
-                              'https://www.youtube.com/results?search_query=$query');
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        },
+                      _buildSearchButton(
+                        context,
+                        label: 'Crunchyroll',
+                        icon: Icons.play_circle_fill,
+                        url: 'https://www.crunchyroll.com/search?q=',
+                        query: anime.title,
+                        color:
+                            const Color(0xFFF47521), // Cor oficial Crunchyroll
+                      ),
+                      _buildSearchButton(
+                        context,
+                        label: 'Youtube',
+                        icon: Icons.video_library,
+                        url: 'https://www.youtube.com/results?search_query=',
+                        query: '${anime.title} trailer review',
+                        color: const Color(0xFFFF0000),
+                      ),
+                      _buildSearchButton(
+                        context,
+                        label: 'Netflix',
+                        icon: Icons.movie_filter,
+                        url: 'https://www.netflix.com/search?q=',
+                        query: anime.title,
+                        color: const Color(0xFFE50914),
                       ),
                     ],
                   ),
@@ -304,6 +309,31 @@ class DetailsPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required String url,
+    required String query,
+    Color? color,
+  }) {
+    return OutlinedButton.icon(
+      icon: Icon(icon, size: 18, color: color),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.white,
+        side: BorderSide(color: color?.withOpacity(0.5) ?? Colors.grey[700]!),
+      ),
+      onPressed: () async {
+        final fullUrl = '$url${Uri.encodeComponent(query)}';
+        final uri = Uri.parse(fullUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
     );
   }
 }
