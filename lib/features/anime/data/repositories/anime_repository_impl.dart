@@ -1,6 +1,7 @@
 import 'package:animes_hub/features/anime/data/datasources/anime_remote_datasource.dart';
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/anime/domain/repositories/anime_repository.dart';
+import 'package:animes_hub/features/anime/domain/entities/anime_streaming.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'anime_repository_impl.g.dart';
@@ -28,6 +29,9 @@ class AnimeRepositoryImpl implements AnimeRepository {
               synopsis: model.synopsis,
               genres: model.genres.map((g) => g.name).toList(),
               trailerUrl: model.trailer?.url,
+              streamingLinks: model.streaming
+                  .map((s) => AnimeStreaming(name: s.name, url: s.url))
+                  .toList(),
             ))
         .toList();
   }
@@ -45,6 +49,9 @@ class AnimeRepositoryImpl implements AnimeRepository {
               synopsis: model.synopsis,
               genres: model.genres.map((g) => g.name).toList(),
               trailerUrl: model.trailer?.url,
+              streamingLinks: model.streaming
+                  .map((s) => AnimeStreaming(name: s.name, url: s.url))
+                  .toList(),
             ))
         .toList();
   }

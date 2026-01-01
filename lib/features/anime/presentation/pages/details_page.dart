@@ -219,6 +219,84 @@ class DetailsPage extends ConsumerWidget {
                           color: Colors.grey[300],
                         ),
                   ),
+                  const SizedBox(height: 32),
+
+                  // Onde Assistir
+                  Text(
+                    'Onde Assistir',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+
+                  if (anime.streamingLinks.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: anime.streamingLinks.map((link) {
+                        return ActionChip(
+                          avatar: const Icon(Icons.tv, size: 16),
+                          label: Text(link.name),
+                          onPressed: () async {
+                            final uri = Uri.parse(link.url);
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri,
+                                  mode: LaunchMode.externalApplication);
+                            }
+                          },
+                        );
+                      }).toList(),
+                    )
+                  else
+                    Text(
+                      'Nenhum serviço de streaming oficial listado.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                    ),
+
+                  const SizedBox(height: 16),
+
+                  // Busca Fallback
+                  Text(
+                    'Buscar Online',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.search),
+                        label: const Text('Google'),
+                        onPressed: () async {
+                          final query = Uri.encodeComponent(
+                              'assistir ${anime.title} online');
+                          final uri = Uri.parse(
+                              'https://www.google.com/search?q=$query');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.video_library),
+                        label: const Text('YouTube'),
+                        onPressed: () async {
+                          final query = Uri.encodeComponent(
+                              '${anime.title} trailer review');
+                          final uri = Uri.parse(
+                              'https://www.youtube.com/results?search_query=$query');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+
                   const SizedBox(height: 96), // Espaço para FAB
                 ],
               ),

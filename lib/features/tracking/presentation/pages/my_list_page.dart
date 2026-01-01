@@ -77,6 +77,7 @@ class _AnimeListByStatus extends ConsumerWidget {
             score: null,
             trailerUrl: null,
             genres: [],
+            streamingLinks: [],
           );
         }).toList();
 
