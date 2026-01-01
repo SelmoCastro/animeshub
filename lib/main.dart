@@ -1,8 +1,18 @@
 import 'package:animes_hub/features/anime/presentation/pages/home_page.dart';
+import 'package:animes_hub/features/tracking/data/models/anime_hive_model.dart';
+import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(AnimeHiveModelAdapter());
+  Hive.registerAdapter(TrackingStatusAdapter());
+
+  await Hive.openBox<AnimeHiveModel>('tracking_box');
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

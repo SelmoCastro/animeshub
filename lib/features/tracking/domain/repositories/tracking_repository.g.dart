@@ -7,7 +7,7 @@ part of 'tracking_repository.dart';
 // **************************************************************************
 
 String _$trackingRepositoryHash() =>
-    r'706321e8763afde8591f5cde78d2491de7e09a13';
+    r'9f8c4f59b6c1e002999ec569957392a11ed40f2e';
 
 /// See also [trackingRepository].
 @ProviderFor(trackingRepository)

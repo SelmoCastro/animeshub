@@ -1,15 +1,14 @@
-import 'package:isar/isar.dart';
+import 'package:hive/hive.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:animes_hub/core/database/isar_provider.dart';
-import 'package:animes_hub/features/tracking/data/models/anime_collection.dart';
+import 'package:animes_hub/features/tracking/data/models/anime_hive_model.dart';
 import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
 
 part 'tracking_repository.g.dart';
 
 class TrackingRepository {
-  final Isar _isar;
+  final Box<AnimeHiveModel> _box;
 
-  TrackingRepository(this._isar);
+  TrackingRepository(this._box);
 
   Future<void> saveOrUpdate({
     required int malId,
@@ -17,43 +16,73 @@ class TrackingRepository {
     String? imageUrl,
     required TrackingStatus status,
   }) async {
-    final newItem = AnimeCollection()
+    // Verificar se já existe (update) ou criar novo
+    // Como malId é único, podemos usar ele como key ou buscar antes.
+    // Hive keys padrão são dinâmicas, mas podemos forçar malId como key se quisermos.
+    // Para simplificar migração e query, vamos buscar pelo malId nos values.
+
+    // Check if exists
+    final existingKey = _getKeyByMalId(malId);
+
+    final item = AnimeHiveModel()
       ..malId = malId
       ..title = title
       ..imageUrl = imageUrl
       ..status = status
       ..updatedAt = DateTime.now();
 
-    await _isar.writeTxn(() async {
-      await _isar.animeCollections.putByMalId(newItem);
-    });
+    if (existingKey != null) {
+      await _box.put(existingKey, item);
+    } else {
+      await _box.add(item);
+    }
   }
 
   Future<void> delete(int malId) async {
-    await _isar.writeTxn(() async {
-      await _isar.animeCollections.deleteByMalId(malId);
-    });
+    final key = _getKeyByMalId(malId);
+    if (key != null) {
+      await _box.delete(key);
+    }
   }
 
-  Stream<TrackingStatus?> watchStatus(int malId) {
-    return _isar.animeCollections
-        .filter()
-        .malIdEqualTo(malId)
-        .watch(fireImmediately: true)
-        .map((animes) => animes.isNotEmpty ? animes.first.status : null);
+  Stream<TrackingStatus?> watchStatus(int malId) async* {
+    // Emitir valor atual imediatamente
+    yield _getStatusSync(malId);
+
+    // Escutar mudanças na box
+    await for (final _ in _box.watch()) {
+      yield _getStatusSync(malId);
+    }
   }
 
-  Future<List<AnimeCollection>> getByStatus(TrackingStatus status) async {
-    return _isar.animeCollections
-        .filter()
-        .statusEqualTo(status)
-        .sortByUpdatedAtDesc()
-        .findAll();
+  TrackingStatus? _getStatusSync(int malId) {
+    try {
+      final item = _box.values.firstWhere((e) => e.malId == malId);
+      return item.status;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  dynamic _getKeyByMalId(int malId) {
+    try {
+      final item = _box.values.firstWhere((e) => e.malId == malId);
+      return item.key;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<AnimeHiveModel> getByStatus(TrackingStatus status) {
+    return _box.values.where((e) => e.status == status).toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
   }
 }
 
 @Riverpod(keepAlive: true)
 Future<TrackingRepository> trackingRepository(TrackingRepositoryRef ref) async {
-  final isar = await ref.watch(isarProvider.future);
-  return TrackingRepository(isar);
+  // Hive box deve ser aberta no main, mas podemos garantir aqui.
+  // Assumindo 'tracking_box' aberta no main.
+  final box = Hive.box<AnimeHiveModel>('tracking_box');
+  return TrackingRepository(box);
 }

@@ -157,14 +157,14 @@ class _TrackingStatusProviderElement
   int get malId => (origin as TrackingStatusProvider).malId;
 }
 
-String _$myListHash() => r'ff0b0cf4af719df1b84a4eab3f2b585f6688125a';
+String _$myListHash() => r'c407cc9eecff5e9880e9d0f307a10fb1f80d91bd';
 
 /// See also [myList].
 @ProviderFor(myList)
 const myListProvider = MyListFamily();
 
 /// See also [myList].
-class MyListFamily extends Family<AsyncValue<List<AnimeCollection>>> {
+class MyListFamily extends Family<AsyncValue<List<AnimeHiveModel>>> {
   /// See also [myList].
   const MyListFamily();
 
@@ -202,7 +202,7 @@ class MyListFamily extends Family<AsyncValue<List<AnimeCollection>>> {
 }
 
 /// See also [myList].
-class MyListProvider extends AutoDisposeFutureProvider<List<AnimeCollection>> {
+class MyListProvider extends AutoDisposeFutureProvider<List<AnimeHiveModel>> {
   /// See also [myList].
   MyListProvider(
     TrackingStatus status,
@@ -236,7 +236,7 @@ class MyListProvider extends AutoDisposeFutureProvider<List<AnimeCollection>> {
 
   @override
   Override overrideWith(
-    FutureOr<List<AnimeCollection>> Function(MyListRef provider) create,
+    FutureOr<List<AnimeHiveModel>> Function(MyListRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -253,7 +253,7 @@ class MyListProvider extends AutoDisposeFutureProvider<List<AnimeCollection>> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<AnimeCollection>> createElement() {
+  AutoDisposeFutureProviderElement<List<AnimeHiveModel>> createElement() {
     return _MyListProviderElement(this);
   }
 
@@ -271,13 +271,13 @@ class MyListProvider extends AutoDisposeFutureProvider<List<AnimeCollection>> {
   }
 }
 
-mixin MyListRef on AutoDisposeFutureProviderRef<List<AnimeCollection>> {
+mixin MyListRef on AutoDisposeFutureProviderRef<List<AnimeHiveModel>> {
   /// The parameter `status` of this provider.
   TrackingStatus get status;
 }
 
 class _MyListProviderElement
-    extends AutoDisposeFutureProviderElement<List<AnimeCollection>>
+    extends AutoDisposeFutureProviderElement<List<AnimeHiveModel>>
     with MyListRef {
   _MyListProviderElement(super.provider);
 

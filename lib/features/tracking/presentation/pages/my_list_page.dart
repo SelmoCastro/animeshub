@@ -1,6 +1,6 @@
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/anime/presentation/widgets/anime_grid.dart';
-import 'package:animes_hub/features/tracking/data/models/anime_collection.dart';
+import 'package:animes_hub/features/tracking/data/models/anime_hive_model.dart';
 import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
 import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
 import 'package:flutter/material.dart';
