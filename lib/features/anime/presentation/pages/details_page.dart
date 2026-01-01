@@ -1,9 +1,12 @@
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
+import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
+import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DetailsPage extends StatelessWidget {
+class DetailsPage extends ConsumerWidget {
   final Anime anime;
 
   const DetailsPage({super.key, required this.anime});
@@ -29,9 +32,99 @@ class DetailsPage extends StatelessWidget {
     }
   }
 
+  void _showStatusSelector(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Adicionar à Minha Lista',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            ...TrackingStatus.values.map(
+              (status) => ListTile(
+                leading: Icon(_getIconForStatus(status)),
+                title: Text(status.label),
+                onTap: () {
+                  ref.read(trackingRepositoryProvider.future).then((repo) {
+                    repo.saveOrUpdate(
+                      malId: anime.malId,
+                      title: anime.title,
+                      imageUrl: anime.imageUrl,
+                      status: status,
+                    );
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Anime movido para ${status.label}')),
+                  );
+                },
+              ),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text('Remover da lista',
+                  style: TextStyle(color: Colors.red)),
+              onTap: () {
+                ref.read(trackingRepositoryProvider.future).then((repo) {
+                  repo.delete(anime.malId);
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Anime removido da lista')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForStatus(TrackingStatus status) {
+    switch (status) {
+      case TrackingStatus.planning:
+        return Icons.calendar_today;
+      case TrackingStatus.watching:
+        return Icons.play_circle_fill;
+      case TrackingStatus.completed:
+        return Icons.check_circle;
+      case TrackingStatus.dropped:
+        return Icons.remove_circle_outline;
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentStatusAsync = ref.watch(trackingStatusProvider(anime.malId));
+
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showStatusSelector(context, ref),
+        icon: currentStatusAsync.when(
+          data: (status) => Icon(
+            status != null ? _getIconForStatus(status) : Icons.add,
+          ),
+          loading: () => const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          error: (_, __) => const Icon(Icons.error),
+        ),
+        label: currentStatusAsync.when(
+          data: (status) => Text(status?.label ?? 'Adicionar'),
+          loading: () => const Text('Carregando...'),
+          error: (_, __) => const Text('Erro'),
+        ),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -125,7 +218,7 @@ class DetailsPage extends StatelessWidget {
                           color: Colors.grey[300],
                         ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 96), // Espaço para FAB
                 ],
               ),
             ),
