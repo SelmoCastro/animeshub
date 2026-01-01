@@ -2,6 +2,8 @@ import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
 import 'package:animes_hub/features/tracking/domain/repositories/tracking_repository.dart';
 import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
+import 'package:animes_hub/features/stremio/data/stremio_service.dart';
+import 'package:animes_hub/features/stremio/presentation/pages/stremio_player_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -238,6 +240,91 @@ class DetailsPage extends ConsumerWidget {
                               color: Colors.grey[300],
                             ),
                       ),
+                      const SizedBox(height: 32),
+
+                      // Stremio Integration
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6B42C1)
+                              .withOpacity(0.2), // Stremio Purple-ish
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: const Color(0xFF6B42C1).withOpacity(0.5)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.rocket_launch,
+                                    color: Color(0xFFBB86FC)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Servidor Privado (VPS)',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  // Check status
+                                  final service = StremioService();
+                                  final isOnline =
+                                      await service.isServerOnline();
+
+                                  if (context.mounted) {
+                                    if (isOnline) {
+                                      // Navigate to Player Page (Player Integrado)
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              StremioPlayerPage(
+                                            title: anime.title,
+                                            // In a real scenario, we would resolve the magnet link here.
+                                            // For now, we open the player which handles the "Missing URL" state by offering the App fallback.
+                                            streamUrl: null,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      // Fallback directly to App
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Servidor VPS Offline. Abrindo App Stremio...')),
+                                      );
+                                      service.launchStremioApp(anime.title);
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.play_arrow_rounded),
+                                label:
+                                    const Text('Assistir no Stremio Privado'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF6B42C1),
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                       const SizedBox(height: 32),
 
                       // Onde Assistir
