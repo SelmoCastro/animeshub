@@ -1,10 +1,13 @@
+import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/anime/presentation/providers/anime_providers.dart';
-import 'package:animes_hub/features/anime/presentation/widgets/anime_card.dart';
+import 'package:animes_hub/features/anime/presentation/providers/home_content_providers.dart';
+import 'package:animes_hub/features/anime/presentation/widgets/anime_section_list.dart';
 import 'package:animes_hub/features/anime/presentation/widgets/hero_banner.dart';
-import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
 import 'package:animes_hub/features/anime/presentation/pages/search_page.dart';
 import 'package:animes_hub/features/auth/presentation/providers/auth_providers.dart';
+import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
 import 'package:animes_hub/features/tracking/presentation/pages/my_list_page.dart';
+import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,15 +16,25 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncAnimes = ref.watch(seasonalAnimesProvider);
+    // Assistindo os múltiplos providers
+    final seasonalAsync = ref.watch(seasonalAnimesProvider);
+    final topAsync = ref.watch(topAnimesProvider);
+    final upcomingAsync = ref.watch(upcomingAnimesProvider);
+    final watchingAsync = ref.watch(myListProvider(TrackingStatus.watching));
 
     return Scaffold(
-      extendBodyBehindAppBar:
-          true, // Permite que o corpo passe por trás da AppBar
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('AnimesHUB Now'),
+        title: const Text(
+          'ANIMESHUB',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 3,
+            fontSize: 20,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.transparent, // AppBar Transparente
+        backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -29,7 +42,7 @@ class HomePage extends ConsumerWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withOpacity(0.7),
+                Colors.black.withOpacity(0.8),
                 Colors.transparent,
               ],
             ),
@@ -68,91 +81,133 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
-      body: asyncAnimes.when(
-        data: (animes) {
-          if (animes.isEmpty) {
-            return const Center(child: Text('Nenhum anime encontrado.'));
-          }
-
-          final featuredAnime = animes.first;
-          final otherAnimes = animes.skip(1).toList();
-
-          return RefreshIndicator(
-            onRefresh: () => ref.refresh(seasonalAnimesProvider.future),
-            child: CustomScrollView(
-              slivers: [
-                // Hero Banner (Featured Anime)
-                SliverToBoxAdapter(
-                  child: HeroBanner(anime: featuredAnime),
-                ),
-
-                // Section Title
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                  sliver: SliverToBoxAdapter(
-                    child: Text(
-                      'Mais Lançamentos',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                    ),
-                  ),
-                ),
-
-                // Grid
-                SliverPadding(
-                  padding: const EdgeInsets.all(12),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.70,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final anime = otherAnimes[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetailsPage(anime: anime),
-                              ),
-                            );
-                          },
-                          child: AnimeCard(anime: anime),
-                        );
-                      },
-                      childCount: otherAnimes.length,
-                    ),
-                  ),
-                ),
-
-                // Bottom Padding
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
-            ),
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.refresh(seasonalAnimesProvider.future);
+          await ref.refresh(topAnimesProvider.future);
+          await ref.refresh(upcomingAnimesProvider.future);
+          await ref.refresh(myListProvider(TrackingStatus.watching).future);
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Erro: $err', textAlign: TextAlign.center),
-              ElevatedButton(
-                onPressed: () => ref.refresh(seasonalAnimesProvider),
-                child: const Text('Tentar novamente'),
+        child: CustomScrollView(
+          slivers: [
+            // Hero Banner (Featured from TOP or Seasonal)
+            SliverToBoxAdapter(
+              child: topAsync.when(
+                data: (list) => list.isNotEmpty
+                    ? HeroBanner(anime: list.first)
+                    : const SizedBox(height: 400),
+                loading: () => Container(
+                  height: 400,
+                  color: Colors.black,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                error: (_, __) => const SizedBox(height: 400),
               ),
-            ],
-          ),
+            ),
+
+            // Seção: Continuar Assistindo (Se tiver itens)
+            SliverToBoxAdapter(
+              child: watchingAsync.when(
+                data: (list) {
+                  if (list.isEmpty) return const SizedBox.shrink();
+                  // Converter HiveModel para Entity Anime
+                  final animeList = list
+                      .map((m) => Anime(
+                            malId: m.malId,
+                            title: m.title,
+                            imageUrl: m.imageUrl,
+                            largeImageUrl: m
+                                .imageUrl, // Hive model não salva a large, usa a mesma
+                            streamingLinks: [],
+                            genres: [],
+                          ))
+                      .toList();
+
+                  return AnimeSectionList(
+                    title: 'Continuar Assistindo',
+                    animes: animeList,
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ),
+
+            // Seção: Lançamentos da Temporada
+            SliverToBoxAdapter(
+              child: seasonalAsync.when(
+                data: (list) => AnimeSectionList(
+                  title: 'Temporada Atual',
+                  animes: list,
+                ),
+                loading: () => const _SectionLoadingPlaceholder(),
+                error: (err, _) => Center(child: Text('Erro: $err')),
+              ),
+            ),
+
+            // Seção: Mais Populares
+            SliverToBoxAdapter(
+              child: topAsync.when(
+                data: (list) => AnimeSectionList(
+                  title: 'Em Alta',
+                  animes:
+                      list.skip(1).toList(), // Pula o primeiro que está no Hero
+                ),
+                loading: () => const _SectionLoadingPlaceholder(),
+                error: (err, _) => const SizedBox.shrink(),
+              ),
+            ),
+
+            // Seção: Próximos Lançamentos
+            SliverToBoxAdapter(
+              child: upcomingAsync.when(
+                data: (list) => AnimeSectionList(
+                  title: 'Em Breve',
+                  animes: list,
+                ),
+                loading: () => const _SectionLoadingPlaceholder(),
+                error: (err, _) => const SizedBox.shrink(),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _SectionLoadingPlaceholder extends StatelessWidget {
+  const _SectionLoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(width: 150, height: 20, color: Colors.grey[900]),
+        ),
+        SizedBox(
+          height: 240,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 5,
+            itemBuilder: (_, __) => Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Container(
+                width: 160,
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

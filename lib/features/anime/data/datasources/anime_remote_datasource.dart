@@ -27,4 +27,16 @@ class AnimeRemoteDataSource {
     final data = response.data['data'] as List;
     return data.map((e) => AnimeModel.fromJson(e)).toList();
   }
+
+  Future<List<AnimeModel>> getTopAnimes() async {
+    final response = await _dio.get('/top/anime');
+    final data = response.data['data'] as List;
+    return data.map((e) => AnimeModel.fromJson(e)).toList();
+  }
+
+  Future<List<AnimeModel>> getUpcomingAnimes() async {
+    final response = await _dio.get('/seasons/upcoming');
+    final data = response.data['data'] as List;
+    return data.map((e) => AnimeModel.fromJson(e)).toList();
+  }
 }
