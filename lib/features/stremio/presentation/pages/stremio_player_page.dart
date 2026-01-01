@@ -1,7 +1,21 @@
+import 'dart:async';
+import 'package:animes_hub/features/stremio/data/stremio_service.dart';
 import 'package:chewie/chewie.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:animes_hub/features/stremio/data/stremio_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+// Conditional imports for Web View
+// We will use a simplified approach: On Web, we use IFrameElement via dart:ui_web (or dart:html shim)
+// On Mobile, we use webview_flutter (but checking platform)
+import 'package:webview_flutter/webview_flutter.dart';
+// Note: handling conditional imports for web/mobile correctly in a single file is tricky without specific setup.
+// For this MVP, we will use a Platform Check widget.
+
+// For Web Iframe registration
+import 'dart:ui_web' as ui_web;
+import 'package:web/web.dart' as web;
 
 class StremioPlayerPage extends StatefulWidget {
   final String? streamUrl;
@@ -18,29 +32,41 @@ class StremioPlayerPage extends StatefulWidget {
 }
 
 class _StremioPlayerPageState extends State<StremioPlayerPage> {
+  // Video Player specific
   VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
+
+  // WebView specific
+  WebViewController? _webViewController;
+
   bool _isLoading = true;
   String? _errorMessage;
+  bool _useWebView = false;
+  final String _viewId = 'stremio-web-view';
 
   @override
   void initState() {
     super.initState();
-    _initializePlayer();
+    _initialize();
   }
 
-  Future<void> _initializePlayer() async {
-    if (widget.streamUrl == null) {
+  Future<void> _initialize() async {
+    if (widget.streamUrl != null) {
+      // Native Player Mode
+      await _initializeNativePlayer(widget.streamUrl!);
+    } else {
+      // WebView/IFrame Mode (Search Stremio)
+      _useWebView = true;
+      _initializeWebView();
       setState(() {
-        _errorMessage = 'Nenhuma URL de stream fornecida.';
         _isLoading = false;
       });
-      return;
     }
+  }
 
+  Future<void> _initializeNativePlayer(String url) async {
     try {
-      _videoPlayerController =
-          VideoPlayerController.networkUrl(Uri.parse(widget.streamUrl!));
+      _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(url));
       await _videoPlayerController!.initialize();
 
       _chewieController = ChewieController(
@@ -50,14 +76,10 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
         aspectRatio: _videoPlayerController!.value.aspectRatio,
         errorBuilder: (context, errorMessage) {
           return Center(
-            child: Text(
-              'Erro no Player: $errorMessage',
-              style: const TextStyle(color: Colors.white),
-            ),
-          );
+              child: Text('Erro: $errorMessage',
+                  style: const TextStyle(color: Colors.white)));
         },
       );
-
       setState(() {
         _isLoading = false;
       });
@@ -69,15 +91,48 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
     }
   }
 
+  void _initializeWebView() {
+    final searchUrl =
+        'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
+
+    if (kIsWeb) {
+      // Register IFrame factory for Web
+      // ignore: undefined_prefixed_name
+      ui_web.platformViewRegistry.registerViewFactory(
+        _viewId,
+        (int viewId) {
+          final iframe = web.HTMLIFrameElement();
+          iframe.src = searchUrl;
+          iframe.style.border = 'none';
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          // Allow fullscreen and basic permissions
+          iframe.allow =
+              "autoplay; fullscreen; encrypted-media; picture-in-picture";
+          return iframe;
+        },
+      );
+    } else {
+      // Mobile WebView Init
+      _webViewController = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {},
+            onPageFinished: (String url) {},
+            onWebResourceError: (WebResourceError error) {},
+          ),
+        )
+        ..loadRequest(Uri.parse(searchUrl));
+    }
+  }
+
   @override
   void dispose() {
     _videoPlayerController?.dispose();
     _chewieController?.dispose();
     super.dispose();
-  }
-
-  void _launchFallback() {
-    StremioService().launchStremioApp(widget.title);
   }
 
   @override
@@ -86,38 +141,51 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text(widget.title),
+        title: Text(_useWebView ? 'Buscar no Stremio' : widget.title),
         leading: const BackButton(color: Colors.white),
+        actions: [
+          if (_useWebView)
+            IconButton(
+              icon: const Icon(Icons.open_in_new),
+              onPressed: () => StremioService().launchStremioApp(widget.title),
+              tooltip: 'Abrir Externamente',
+            )
+        ],
       ),
-      body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator(color: Color(0xFFBB86FC))
-            : _errorMessage != null
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 48),
-                      const SizedBox(height: 16),
-                      Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: _launchFallback,
-                        icon: const Icon(Icons.open_in_new),
-                        label: const Text('Abrir no App Stremio'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFBB86FC),
-                          foregroundColor: Colors.black,
-                        ),
-                      )
-                    ],
-                  )
-                : Chewie(controller: _chewieController!),
-      ),
+      body: _buildBody(),
     );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+          child: CircularProgressIndicator(color: Color(0xFFBB86FC)));
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_errorMessage!, style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => StremioService().launchStremioApp(widget.title),
+              child: const Text('Tentar no App Stremio'),
+            )
+          ],
+        ),
+      );
+    }
+
+    if (_useWebView) {
+      if (kIsWeb) {
+        return HtmlElementView(viewType: _viewId);
+      } else {
+        return WebViewWidget(controller: _webViewController!);
+      }
+    }
+
+    return Chewie(controller: _chewieController!);
   }
 }
