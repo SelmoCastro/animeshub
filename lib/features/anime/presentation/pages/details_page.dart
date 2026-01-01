@@ -119,12 +119,14 @@ class DetailsPage extends ConsumerWidget {
           loading: () => const SizedBox(
             width: 24,
             height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+            child:
+                CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
           ),
           error: (_, __) => const Icon(Icons.error),
         ),
         label: currentStatusAsync.when(
-          data: (status) => Text(status?.label ?? 'Adicionar à Lista', style: const TextStyle(fontWeight: FontWeight.bold)),
+          data: (status) => Text(status?.label ?? 'Adicionar à Lista',
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           loading: () => const Text('Carregando...'),
           error: (_, __) => const Text('Erro'),
         ),
@@ -138,7 +140,8 @@ class DetailsPage extends ConsumerWidget {
               fit: BoxFit.cover,
             ),
           ),
-          Positioned.fill(child: Container(color: Colors.black.withOpacity(0.4))),
+          Positioned.fill(
+              child: Container(color: Colors.black.withOpacity(0.4))),
           CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -179,147 +182,153 @@ class DetailsPage extends ConsumerWidget {
                   ),
                 ),
               ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nota e Ações
-                  Row(
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 28),
-                      const SizedBox(width: 8),
-                      Text(
-                        anime.score != null ? anime.score.toString() : 'N/A',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const Spacer(),
-                      if (anime.trailerUrl != null)
-                        FilledButton.icon(
-                          onPressed: () => _launchTrailer(context),
-                          icon: const Icon(Icons.play_circle_outline),
-                          label: const Text('Ver Trailer'),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Gêneros
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 4.0,
-                    children: anime.genres
-                        .map((genre) => Chip(
-                              label: Text(genre),
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                            ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Sinopse
-                  Text(
-                    'Sinopse',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    anime.synopsis ?? 'Sem sinopse disponível.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          height: 1.5,
-                          color: Colors.grey[300],
-                        ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Onde Assistir
-                  Text(
-                    'Onde Assistir',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-
-                  if (anime.streamingLinks.isNotEmpty)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: anime.streamingLinks.map((link) {
-                        return ActionChip(
-                          avatar: const Icon(Icons.tv, size: 16),
-                          label: Text(link.name),
-                          onPressed: () async {
-                            final uri = Uri.parse(link.url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          },
-                        );
-                      }).toList(),
-                    )
-                  else
-                    Text(
-                      'Nenhum serviço de streaming oficial listado.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey,
-                            fontStyle: FontStyle.italic,
+                      // Nota e Ações
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 28),
+                          const SizedBox(width: 8),
+                          Text(
+                            anime.score != null
+                                ? anime.score.toString()
+                                : 'N/A',
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
-                    ),
+                          const Spacer(),
+                          if (anime.trailerUrl != null)
+                            FilledButton.icon(
+                              onPressed: () => _launchTrailer(context),
+                              icon: const Icon(Icons.play_circle_outline),
+                              label: const Text('Ver Trailer'),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
 
-                  const SizedBox(height: 16),
+                      // Gêneros
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 4.0,
+                        children: anime.genres
+                            .map((genre) => Chip(
+                                  label: Text(genre),
+                                  backgroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest,
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 24),
 
-                  // Busca Fallback
-                  Text(
-                    'Buscar Online',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildSearchButton(
-                        context,
-                        label: 'Google',
-                        icon: Icons.search,
-                        url: 'https://www.google.com/search?q=',
-                        query: 'assistir ${anime.title} online',
+                      // Sinopse
+                      Text(
+                        'Sinopse',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      _buildSearchButton(
-                        context,
-                        label: 'Crunchyroll',
-                        icon: Icons.play_circle_fill,
-                        url: 'https://www.crunchyroll.com/search?q=',
-                        query: anime.title,
-                        color:
-                            const Color(0xFFF47521), // Cor oficial Crunchyroll
+                      const SizedBox(height: 8),
+                      Text(
+                        anime.synopsis ?? 'Sem sinopse disponível.',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              height: 1.5,
+                              color: Colors.grey[300],
+                            ),
                       ),
-                      _buildSearchButton(
-                        context,
-                        label: 'Youtube',
-                        icon: Icons.video_library,
-                        url: 'https://www.youtube.com/results?search_query=',
-                        query: '${anime.title} trailer review',
-                        color: const Color(0xFFFF0000),
+                      const SizedBox(height: 32),
+
+                      // Onde Assistir
+                      Text(
+                        'Onde Assistir',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      _buildSearchButton(
-                        context,
-                        label: 'Netflix',
-                        icon: Icons.movie_filter,
-                        url: 'https://www.netflix.com/search?q=',
-                        query: anime.title,
-                        color: const Color(0xFFE50914),
+                      const SizedBox(height: 16),
+
+                      if (anime.streamingLinks.isNotEmpty)
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: anime.streamingLinks.map((link) {
+                            return ActionChip(
+                              avatar: const Icon(Icons.tv, size: 16),
+                              label: Text(link.name),
+                              onPressed: () async {
+                                final uri = Uri.parse(link.url);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                            );
+                          }).toList(),
+                        )
+                      else
+                        Text(
+                          'Nenhum serviço de streaming oficial listado.',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                        ),
+
+                      const SizedBox(height: 16),
+
+                      // Busca Fallback
+                      Text(
+                        'Buscar Online',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildSearchButton(
+                            context,
+                            label: 'Google',
+                            icon: Icons.search,
+                            url: 'https://www.google.com/search?q=',
+                            query: 'assistir ${anime.title} online',
+                          ),
+                          _buildSearchButton(
+                            context,
+                            label: 'Crunchyroll',
+                            icon: Icons.play_circle_fill,
+                            url: 'https://www.crunchyroll.com/search?q=',
+                            query: anime.title,
+                            color: const Color(
+                                0xFFF47521), // Cor oficial Crunchyroll
+                          ),
+                          _buildSearchButton(
+                            context,
+                            label: 'Youtube',
+                            icon: Icons.video_library,
+                            url:
+                                'https://www.youtube.com/results?search_query=',
+                            query: '${anime.title} trailer review',
+                            color: const Color(0xFFFF0000),
+                          ),
+                          _buildSearchButton(
+                            context,
+                            label: 'Netflix',
+                            icon: Icons.movie_filter,
+                            url: 'https://www.netflix.com/search?q=',
+                            query: anime.title,
+                            color: const Color(0xFFE50914),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 96), // Espaço para FAB
                     ],
                   ),
-
-                  const SizedBox(height: 96), // Espaço para FAB
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
