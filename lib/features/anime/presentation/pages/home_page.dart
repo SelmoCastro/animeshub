@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:animes_hub/core/widgets/main_layout.dart';
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/anime/presentation/providers/anime_providers.dart';
@@ -9,6 +10,7 @@ import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dar
 import 'package:animes_hub/features/tracking/presentation/pages/my_list_page.dart';
 import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
 import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -163,17 +165,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ))
                 .toList();
 
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-            backdropFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.2), BlendMode.darken),
-          ),
-          child: Column(
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
