@@ -18,3 +18,8 @@ services:
       - "11470:11470"
     environment:
       - NO_CORS=1
+    volumes:
+      - stremio_data:/root/.stremio-server
+
+volumes:
+  stremio_data:
