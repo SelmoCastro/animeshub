@@ -1,27 +1,55 @@
+import 'package:animes_hub/features/auth/presentation/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _isLogin = true; // Toggle entre Login e Cadastro
 
-  void _login() async {
+  void _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // Simulação de delay de autenticação
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        setState(() => _isLoading = false);
-        // Navegar para Home (Rota será configurada no main)
-        Navigator.pushReplacementNamed(context, '/home');
+      try {
+        final authRepo = ref.read(authRepositoryProvider);
+        if (_isLogin) {
+          await authRepo.signIn(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
+          );
+        } else {
+          await authRepo.signUp(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
+          );
+        }
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          // Sucesso! O redirecionamento pode ser feito ouvindo o stream no main ou pushReplacement
+          // Como o main já tem rotas, vamos forçar a navegação se o stream não pegar a tempo
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }
@@ -107,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'ACESSO AO SISTEMA',
+                      _isLogin ? 'ACESSO AO SISTEMA' : 'CRIAR NOVA CONTA',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
@@ -136,26 +164,29 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 48),
 
-                    // Login Button with Glow
+                    // Action Button with Glow
                     Container(
                       height: 56,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: neonPurple.withOpacity(0.4),
+                            color: (_isLogin ? neonPurple : neonCyan)
+                                .withOpacity(0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
                         ],
-                        gradient: const LinearGradient(
-                          colors: [neonPurple, Color(0xFF9955F0)],
+                        gradient: LinearGradient(
+                          colors: _isLogin
+                              ? [neonPurple, const Color(0xFF9955F0)]
+                              : [neonCyan, const Color(0xFF03ADB5)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                       ),
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _login,
+                        onPressed: _isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -166,9 +197,9 @@ class _LoginPageState extends State<LoginPage> {
                         child: _isLoading
                             ? const CircularProgressIndicator(
                                 color: Colors.white)
-                            : const Text(
-                                'ENTRAR',
-                                style: TextStyle(
+                            : Text(
+                                _isLogin ? 'ENTRAR' : 'CADASTRAR',
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -179,18 +210,23 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Register Link
+                    // Toggle Button
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                          _formKey.currentState?.reset();
+                        });
+                      },
                       child: RichText(
-                        text: const TextSpan(
-                          text: 'Novo por aqui? ',
-                          style: TextStyle(color: Colors.grey),
+                        text: TextSpan(
+                          text: _isLogin ? 'Novo por aqui? ' : 'Já tem conta? ',
+                          style: const TextStyle(color: Colors.grey),
                           children: [
                             TextSpan(
-                              text: 'Crie uma conta',
+                              text: _isLogin ? 'Crie uma conta' : 'Fazer Login',
                               style: TextStyle(
-                                color: neonCyan,
+                                color: _isLogin ? neonCyan : neonPurple,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -221,6 +257,7 @@ class _LoginPageState extends State<LoginPage> {
       style: const TextStyle(color: Colors.white),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Campo obrigatório';
+        if (isPassword && value.length < 6) return 'Mínimo 6 caracteres';
         return null;
       },
       decoration: InputDecoration(

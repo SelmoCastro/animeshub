@@ -3,6 +3,7 @@ import 'package:animes_hub/features/anime/presentation/widgets/anime_card.dart';
 import 'package:animes_hub/features/anime/presentation/widgets/hero_banner.dart';
 import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
 import 'package:animes_hub/features/anime/presentation/pages/search_page.dart';
+import 'package:animes_hub/features/auth/presentation/providers/auth_providers.dart';
 import 'package:animes_hub/features/tracking/presentation/pages/my_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,6 +53,17 @@ class HomePage extends ConsumerWidget {
                 context,
                 MaterialPageRoute(builder: (context) => const SearchPage()),
               );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
+            onPressed: () async {
+              final authRepo = ref.read(authRepositoryProvider);
+              await authRepo.signOut();
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(context, '/');
+              }
             },
           ),
         ],
