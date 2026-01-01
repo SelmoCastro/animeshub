@@ -9,7 +9,7 @@ import 'package:animes_hub/features/auth/presentation/providers/auth_providers.d
 import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
 import 'package:animes_hub/features/tracking/presentation/pages/my_list_page.dart';
 import 'package:animes_hub/features/tracking/presentation/providers/tracking_providers.dart';
-import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
+import 'package:animes_hub/features/anime/presentation/widgets/anime_section_list.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,6 +100,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
+            // Categorized Content Based on Tab (Discovery)
             SliverToBoxAdapter(
               child: _buildSectionContent(_tabIndex == 0
                   ? seasonalAsync
@@ -109,6 +110,65 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ? watchingAsync
                           : topAsync),
             ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+
+            // --- FIXED SECTIONS (From Old Layout) ---
+
+            // Seção: Estão Assistindo
+            SliverToBoxAdapter(
+              child: watchingAsync.when(
+                data: (list) {
+                  if (list.isEmpty) return const SizedBox.shrink();
+                  final animeList = list
+                      .map((m) => Anime(
+                            malId: m.malId,
+                            title: m.title,
+                            imageUrl: m.imageUrl ?? '',
+                            largeImageUrl: m.imageUrl ?? '',
+                            streamingLinks: [],
+                            genres: [],
+                          ))
+                      .toList();
+                  return AnimeSectionList(
+                      title: 'Continuar Assistindo', animes: animeList);
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ),
+
+            // Seção: Temporada Atual
+            SliverToBoxAdapter(
+              child: seasonalAsync.when(
+                data: (list) =>
+                    AnimeSectionList(title: 'Temporada Atual', animes: list),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ),
+
+            // Seção: Em Alta (Populares)
+            SliverToBoxAdapter(
+              child: topAsync.when(
+                data: (list) => AnimeSectionList(
+                    title: 'Em Alta',
+                    animes: list.skip(10).toList()), // Pula os do carrossel
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ),
+
+            // Seção: Em Breve
+            SliverToBoxAdapter(
+              child: upcomingAsync.when(
+                data: (list) =>
+                    AnimeSectionList(title: 'Em Breve', animes: list),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ),
+
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
