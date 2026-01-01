@@ -178,38 +178,40 @@ class _HomePageState extends ConsumerState<HomePage> {
                 border: Border.all(color: Colors.white.withOpacity(0.05)),
               ),
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    _tabIndex == 1
-                        ? 'Upcoming Anime Releases'
-                        : 'Animes Sugeridos',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.1,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _tabIndex == 1
+                            ? 'Upcoming Anime Releases'
+                            : 'Animes Sugeridos',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios,
+                          color: Colors.white.withOpacity(0.5), size: 14),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 180,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: animes.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 16),
+                      itemBuilder: (context, index) =>
+                          _CompactAnimeCard(anime: animes[index]),
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios,
-                      color: Colors.white.withOpacity(0.5), size: 14),
                 ],
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: 180,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: animes.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) =>
-                      _CompactAnimeCard(anime: animes[index]),
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
