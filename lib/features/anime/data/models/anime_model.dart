@@ -4,7 +4,7 @@ part 'anime_model.freezed.dart';
 part 'anime_model.g.dart';
 
 @freezed
-class AnimeModel with _$AnimeModel {
+abstract class AnimeModel with _$AnimeModel {
   const factory AnimeModel({
     @JsonKey(name: 'mal_id') required int malId,
     required String title,
@@ -24,7 +24,7 @@ class AnimeModel with _$AnimeModel {
 }
 
 @freezed
-class AnimeImages with _$AnimeImages {
+abstract class AnimeImages with _$AnimeImages {
   const factory AnimeImages({
     required ImageType jpg,
     required ImageType webp,
@@ -35,7 +35,7 @@ class AnimeImages with _$AnimeImages {
 }
 
 @freezed
-class ImageType with _$ImageType {
+abstract class ImageType with _$ImageType {
   const factory ImageType({
     @JsonKey(name: 'image_url') String? imageUrl,
     @JsonKey(name: 'large_image_url') String? largeImageUrl,
@@ -46,7 +46,7 @@ class ImageType with _$ImageType {
 }
 
 @freezed
-class Trailer with _$Trailer {
+abstract class Trailer with _$Trailer {
   const factory Trailer({
     @JsonKey(name: 'youtube_id') String? youtubeId,
     String? url,
@@ -58,7 +58,7 @@ class Trailer with _$Trailer {
 }
 
 @freezed
-class Genre with _$Genre {
+abstract class Genre with _$Genre {
   const factory Genre({
     @JsonKey(name: 'mal_id') required int malId,
     required String name,
@@ -69,7 +69,7 @@ class Genre with _$Genre {
 }
 
 @freezed
-class StreamingLink with _$StreamingLink {
+abstract class StreamingLink with _$StreamingLink {
   const factory StreamingLink({
     required String name,
     required String url,

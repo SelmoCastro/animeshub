@@ -22,7 +22,8 @@ COPY . .
 # Obter dependências
 RUN flutter pub get
 
-# Gerar arquivos de código (Freezed/JSON Serializable)
+# Limpar e gerar arquivos de código (Freezed/JSON Serializable)
+RUN dart run build_runner clean
 RUN dart run build_runner build --delete-conflicting-outputs
 
 # Buildar para web
