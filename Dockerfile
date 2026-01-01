@@ -6,8 +6,8 @@ RUN apt-get update && \
     apt-get install -y curl git wget unzip ca-certificates && \
     apt-get clean
 
-# Clonar o Flutter SDK
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
+# Clonar o Flutter SDK (Branch Stable)
+RUN git clone https://github.com/flutter/flutter.git -b stable /usr/local/flutter
 
 # Adicionar flutter ao path
 ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
