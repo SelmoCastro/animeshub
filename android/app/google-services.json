@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "134613216378",
+    "project_id": "animeshub-f72f8",
+    "storage_bucket": "animeshub-f72f8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134613216378:android:2b7ca8abd125814cf71fc3",
+        "android_client_info": {
+          "package_name": "com.example.animes_hub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOl1jIqzItsaZ7THu-d55wWY_NUviFIF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

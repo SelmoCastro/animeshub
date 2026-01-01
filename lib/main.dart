@@ -1,11 +1,20 @@
 import 'package:animes_hub/features/anime/presentation/pages/home_page.dart';
+import 'package:animes_hub/features/auth/presentation/pages/login_page.dart';
 import 'package:animes_hub/features/tracking/data/models/anime_hive_model.dart';
 import 'package:animes_hub/features/tracking/domain/entities/tracking_status.dart';
+import 'package:animes_hub/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:animes_hub/firebase_options.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await Hive.initFlutter();
 
   Hive.registerAdapter(AnimeHiveModelAdapter());
@@ -45,7 +54,12 @@ class MyApp extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
         ),
       ),
-      home: const HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+      },
+      // home: const HomePage(), // Substituído por rotas
     );
   }
-}
+} // Adicionar import do LoginPage
