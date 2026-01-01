@@ -37,8 +37,10 @@ class TrackingRepository {
 
   Stream<TrackingStatus?> watchStatus(int malId) {
     return _isar.animeCollections
-        .watchObjectByMalId(malId)
-        .map((anime) => anime?.status);
+        .filter()
+        .malIdEqualTo(malId)
+        .watch(fireImmediately: true)
+        .map((animes) => animes.isNotEmpty ? animes.first.status : null);
   }
 
   Future<List<AnimeCollection>> getByStatus(TrackingStatus status) async {

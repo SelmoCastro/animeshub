@@ -18,7 +18,7 @@ class HomePage extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.Bookmarks_outlined),
+            icon: const Icon(Icons.bookmarks_outlined),
             tooltip: 'Minha Lista',
             onPressed: () {
               Navigator.push(

@@ -5,15 +5,17 @@ import 'package:flutter/material.dart';
 
 class AnimeGrid extends StatelessWidget {
   final List<Anime> animes;
+  final Future<void> Function()? onRefresh;
 
-  const AnimeGrid({super.key, required this.animes});
+  const AnimeGrid({super.key, required this.animes, this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     if (animes.isEmpty) {
       return const Center(child: Text('Nenhum anime encontrado.'));
     }
-    return GridView.builder(
+
+    Widget grid = GridView.builder(
       padding: const EdgeInsets.all(12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -37,5 +39,14 @@ class AnimeGrid extends StatelessWidget {
         );
       },
     );
+
+    if (onRefresh != null) {
+      return RefreshIndicator(
+        onRefresh: onRefresh!,
+        child: grid,
+      );
+    }
+
+    return grid;
   }
 }
