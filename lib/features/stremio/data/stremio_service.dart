@@ -64,6 +64,8 @@ class StremioService {
         await launchUrl(webUrl);
       }
     }
+  }
+
   // Tenta obter o ID do IMDB via Jikan API para garantir link direto correto no Stremio
   Future<String?> resolveImdbId(int malId) async {
     try {
@@ -74,7 +76,7 @@ class StremioService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final links = data['data'] as List;
-        
+
         // Procura pelo link do IMDB ou "Official Site" que contenha o ID
         final imdbLink = links.firstWhere(
             (l) => (l['name'] as String).toLowerCase() == 'imdb',
