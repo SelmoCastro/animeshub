@@ -64,5 +64,39 @@ class StremioService {
         await launchUrl(webUrl);
       }
     }
+  // Tenta obter o ID do IMDB via Jikan API para garantir link direto correto no Stremio
+  Future<String?> resolveImdbId(int malId) async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://api.jikan.moe/v4/anime/$malId/external'))
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final links = data['data'] as List;
+        
+        // Procura pelo link do IMDB ou "Official Site" que contenha o ID
+        final imdbLink = links.firstWhere(
+            (l) => (l['name'] as String).toLowerCase() == 'imdb',
+            orElse: () => null);
+
+        if (imdbLink != null) {
+          final url = imdbLink['url'] as String;
+          // Extrai o ID ttXXXXXXX da URL (ex: https://www.imdb.com/title/tt1234567/)
+          final uri = Uri.parse(url);
+          // Geralmente o ID é o último segmento ou penúltimo se terminar com /
+          // Ex: /title/tt1234567/
+          final segments = uri.pathSegments;
+          for (final segment in segments) {
+            if (segment.startsWith('tt')) {
+              return segment;
+            }
+          }
+        }
+      }
+    } catch (_) {
+      // Falha silenciosa, retornará null e usará fallback de busca
+    }
+    return null;
   }
 }

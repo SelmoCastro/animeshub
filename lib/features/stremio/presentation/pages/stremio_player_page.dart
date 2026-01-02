@@ -40,8 +40,10 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
   final String _viewId = 'stremio-web-view';
 
   // Toggle between Direct Link and Search
-  // Padrão: Busca (false), pois deep link direto (true) falha sem IMDB/Kitsu ID mapeado.
   bool _isDirectLink = false;
+
+  // Resolved IMDB ID
+  String? _resolvedImdbId;
 
   @override
   void initState() {
@@ -56,11 +58,24 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
     } else {
       // WebView/IFrame Mode
       _useWebView = true;
-      _isDirectLink = widget.malId != null; // Try direct link if ID exists
+
+      // Tentar resolver IMDB ID se tivermos um MAL ID
+      if (widget.malId != null) {
+        final service = StremioService();
+        _resolvedImdbId = await service.resolveImdbId(widget.malId!);
+        if (_resolvedImdbId != null) {
+          _isDirectLink = true; // Sucesso! Temos um ID compatível.
+        } else {
+          _isDirectLink = false; // Falha na resolução, vai para busca.
+        }
+      }
+
       _initializeWebView();
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -80,25 +95,37 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
                   style: const TextStyle(color: Colors.white)));
         },
       );
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Falha ao carregar vídeo: $e';
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Falha ao carregar vídeo: $e';
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _initializeWebView() {
     // Construct URL: Direct Deep Link or Search Fallback
     String url;
-    if (_isDirectLink && widget.malId != null) {
-      // Try mapping MAL ID to Stremio. 'series' is the most common type for Anime.
-      // Format: mal:<id> is supported by some addons (like Anime Kitsu).
-      // We will try the standard Stremio deep link pattern for MAL.
-      url = 'https://web.stremio.com/#/detail/series/mal:${widget.malId}';
+
+    // Prioridade: IMDB ID resolvido > MAL ID (se suportado) > Busca
+    if (_isDirectLink) {
+      if (_resolvedImdbId != null) {
+        // BEST CASE: Temos o ID oficial do IMDB/Cinemeta
+        url = 'https://web.stremio.com/#/detail/series/$_resolvedImdbId';
+      } else if (widget.malId != null) {
+        // Fallback para MAL ID (pode falhar "No Addons")
+        url = 'https://web.stremio.com/#/detail/series/mal:${widget.malId}';
+      } else {
+        // Should not happen if _isDirectLink is true without IDs
+        url =
+            'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
+      }
     } else {
       url =
           'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
@@ -163,7 +190,7 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(_useWebView
-            ? (_isDirectLink ? 'Detalhes (Direto)' : 'Buscar no Stremio')
+            ? (_isDirectLink ? 'Detalhes (IMDB/MAL)' : 'Busca por Nome')
             : widget.title),
         leading: const BackButton(color: Colors.white),
         actions: [
