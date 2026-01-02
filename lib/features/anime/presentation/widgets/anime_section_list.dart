@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:animes_hub/features/anime/domain/entities/anime.dart';
 import 'package:animes_hub/features/anime/presentation/pages/details_page.dart';
 import 'package:animes_hub/features/anime/presentation/pages/see_all_page.dart';
+import 'package:animes_hub/features/stremio/presentation/pages/stremio_player_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -92,8 +93,11 @@ class _GalacticCompactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (context) => DetailsPage(anime: anime))),
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  StremioPlayerPage(title: anime.title, malId: anime.malId))),
       child: Container(
         width: 120,
         decoration: BoxDecoration(

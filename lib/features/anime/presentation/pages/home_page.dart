@@ -329,8 +329,9 @@ class _CentralCarouselState extends State<_CentralCarousel> {
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          DetailsPage(anime: widget.animes[index]))),
+                      builder: (context) => StremioPlayerPage(
+                          title: widget.animes[index].title,
+                          malId: widget.animes[index].malId))),
               child: _OrnateAnimeCard(
                   anime: widget.animes[index],
                   isCenter: relativePosition.abs() < 0.5),
@@ -424,8 +425,11 @@ class _CompactAnimeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (context) => DetailsPage(anime: anime))),
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  StremioPlayerPage(title: anime.title, malId: anime.malId))),
       child: Container(
         width: 120,
         decoration: BoxDecoration(
