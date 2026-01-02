@@ -5,26 +5,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-// Conditional imports for Web View
-// We will use a simplified approach: On Web, we use IFrameElement via dart:ui_web (or dart:html shim)
-// On Mobile, we use webview_flutter (but checking platform)
 import 'package:webview_flutter/webview_flutter.dart';
-// Note: handling conditional imports for web/mobile correctly in a single file is tricky without specific setup.
-// For this MVP, we will use a Platform Check widget.
-
-// For Web Iframe registration
+// Note: Conditional imports would be better, but we are keeping it simple for this file structure.
 import 'dart:ui_web' as ui_web;
 import 'package:web/web.dart' as web;
 
 class StremioPlayerPage extends StatefulWidget {
   final String? streamUrl;
   final String title;
+  final int? malId; // ID para Deep Link direto
 
   const StremioPlayerPage({
     super.key,
     this.streamUrl,
     required this.title,
+    this.malId,
   });
 
   @override
@@ -44,6 +39,9 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
   bool _useWebView = false;
   final String _viewId = 'stremio-web-view';
 
+  // Toggle between Direct Link and Search
+  bool _isDirectLink = true;
+
   @override
   void initState() {
     super.initState();
@@ -55,8 +53,9 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
       // Native Player Mode
       await _initializeNativePlayer(widget.streamUrl!);
     } else {
-      // WebView/IFrame Mode (Search Stremio)
+      // WebView/IFrame Mode
       _useWebView = true;
+      _isDirectLink = widget.malId != null; // Try direct link if ID exists
       _initializeWebView();
       setState(() {
         _isLoading = false;
@@ -92,8 +91,17 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
   }
 
   void _initializeWebView() {
-    final searchUrl =
-        'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
+    // Construct URL: Direct Deep Link or Search Fallback
+    String url;
+    if (_isDirectLink && widget.malId != null) {
+      // Try mapping MAL ID to Stremio. 'series' is the most common type for Anime.
+      // Format: mal:<id> is supported by some addons (like Anime Kitsu).
+      // We will try the standard Stremio deep link pattern for MAL.
+      url = 'https://web.stremio.com/#/detail/series/mal:${widget.malId}';
+    } else {
+      url =
+          'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
+    }
 
     if (kIsWeb) {
       // Register IFrame factory for Web
@@ -102,11 +110,10 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
         _viewId,
         (int viewId) {
           final iframe = web.HTMLIFrameElement();
-          iframe.src = searchUrl;
+          iframe.src = url;
           iframe.style.border = 'none';
           iframe.style.width = '100%';
           iframe.style.height = '100%';
-          // Allow fullscreen and basic permissions
           iframe.allow =
               "autoplay; fullscreen; encrypted-media; picture-in-picture";
           return iframe;
@@ -124,8 +131,21 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
             onWebResourceError: (WebResourceError error) {},
           ),
         )
-        ..loadRequest(Uri.parse(searchUrl));
+        ..loadRequest(Uri.parse(url));
     }
+  }
+
+  void _toggleViewMode() {
+    setState(() {
+      _isDirectLink = !_isDirectLink;
+      _isLoading = true;
+    });
+    // Re-init webview with new URL
+    _initializeWebView();
+    // Small delay to refresh UI
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) setState(() => _isLoading = false);
+    });
   }
 
   @override
@@ -141,9 +161,18 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text(_useWebView ? 'Buscar no Stremio' : widget.title),
+        title: Text(_useWebView
+            ? (_isDirectLink ? 'Detalhes (Direto)' : 'Buscar no Stremio')
+            : widget.title),
         leading: const BackButton(color: Colors.white),
         actions: [
+          if (_useWebView)
+            IconButton(
+              icon: Icon(_isDirectLink ? Icons.search : Icons.link),
+              onPressed: _toggleViewMode,
+              tooltip:
+                  _isDirectLink ? 'Mudar para Busca' : 'Tentar Link Direto',
+            ),
           if (_useWebView)
             IconButton(
               icon: const Icon(Icons.open_in_new),

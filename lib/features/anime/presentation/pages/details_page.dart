@@ -292,6 +292,7 @@ class DetailsPage extends ConsumerWidget {
                                           builder: (context) =>
                                               StremioPlayerPage(
                                             title: anime.title,
+                                            malId: anime.malId,
                                             // In a real scenario, we would resolve the magnet link here.
                                             // For now, we open the player which handles the "Missing URL" state by offering the App fallback.
                                             streamUrl: null,
