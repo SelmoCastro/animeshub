@@ -96,8 +96,10 @@ class _GalacticCompactCard extends StatelessWidget {
       onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  StremioPlayerPage(title: anime.title, malId: anime.malId))),
+              builder: (context) => StremioPlayerPage(
+                  title: anime.title,
+                  titleEnglish: anime.titleEnglish,
+                  malId: anime.malId))),
       child: Container(
         width: 120,
         decoration: BoxDecoration(

@@ -13,12 +13,14 @@ import 'package:web/web.dart' as web;
 class StremioPlayerPage extends StatefulWidget {
   final String? streamUrl;
   final String title;
+  final String? titleEnglish; // Título em Inglês (Preferido pelo Stremio)
   final int? malId; // ID para Deep Link direto
 
   const StremioPlayerPage({
     super.key,
     this.streamUrl,
     required this.title,
+    this.titleEnglish,
     this.malId,
   });
 
@@ -109,6 +111,30 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
     }
   }
 
+  // Helper para limpar o título (Smart Query)
+  String _getSmartQuery() {
+    // 1. Se tiver título em inglês, usa ele (Geralmente é o oficial do Stremio/Cinemeta)
+    if (widget.titleEnglish != null && widget.titleEnglish!.isNotEmpty) {
+      return widget.titleEnglish!;
+    }
+
+    // 2. Se não, limpa o título principal removendo sufixos de temporada
+    // Remove "Season 2", "2nd Season", "Part 2", etc.
+    String clean = widget.title;
+    final suffixes = [
+      RegExp(r'\s*\d+(st|nd|rd|th)\s*Season', caseSensitive: false),
+      RegExp(r'\s*Season\s*\d+', caseSensitive: false),
+      RegExp(r'\s*Part\s*\d+', caseSensitive: false),
+      RegExp(r'\s*Cour\s*\d+', caseSensitive: false),
+    ];
+
+    for (final regex in suffixes) {
+      clean = clean.replaceAll(regex, '');
+    }
+
+    return clean.trim();
+  }
+
   void _initializeWebView() {
     // Construct URL: Direct Deep Link or Search Fallback
     String url;
@@ -124,11 +150,11 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
       } else {
         // Should not happen if _isDirectLink is true without IDs
         url =
-            'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
+            'https://web.stremio.com/#/search?search=${Uri.encodeComponent(_getSmartQuery())}';
       }
     } else {
       url =
-          'https://web.stremio.com/#/search?search=${Uri.encodeComponent(widget.title)}';
+          'https://web.stremio.com/#/search?search=${Uri.encodeComponent(_getSmartQuery())}';
     }
 
     if (kIsWeb) {

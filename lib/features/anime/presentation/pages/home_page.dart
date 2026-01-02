@@ -332,6 +332,7 @@ class _CentralCarouselState extends State<_CentralCarousel> {
                   MaterialPageRoute(
                       builder: (context) => StremioPlayerPage(
                           title: widget.animes[index].title,
+                          titleEnglish: widget.animes[index].titleEnglish,
                           malId: widget.animes[index].malId))),
               child: _OrnateAnimeCard(
                   anime: widget.animes[index],
@@ -429,8 +430,10 @@ class _CompactAnimeCard extends StatelessWidget {
       onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  StremioPlayerPage(title: anime.title, malId: anime.malId))),
+              builder: (context) => StremioPlayerPage(
+                  title: anime.title,
+                  titleEnglish: anime.titleEnglish,
+                  malId: anime.malId))),
       child: Container(
         width: 120,
         decoration: BoxDecoration(

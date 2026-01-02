@@ -3,6 +3,7 @@ import 'package:animes_hub/features/anime/domain/entities/anime_streaming.dart';
 class Anime {
   final int malId;
   final String title;
+  final String? titleEnglish;
   final String imageUrl;
   final String largeImageUrl;
   final double? score;
@@ -14,6 +15,7 @@ class Anime {
   const Anime({
     required this.malId,
     required this.title,
+    this.titleEnglish,
     required this.imageUrl,
     required this.largeImageUrl,
     this.score,

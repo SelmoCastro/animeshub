@@ -39,6 +39,7 @@ class AnimeRepositoryImpl implements AnimeRepository {
         .map((model) => Anime(
               malId: model.malId,
               title: model.title,
+              titleEnglish: model.titleEnglish,
               imageUrl: model.images.jpg.imageUrl ?? '',
               largeImageUrl: model.images.jpg.largeImageUrl ?? '',
               score: model.score,
