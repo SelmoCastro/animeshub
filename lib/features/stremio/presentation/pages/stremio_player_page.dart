@@ -40,7 +40,8 @@ class _StremioPlayerPageState extends State<StremioPlayerPage> {
   final String _viewId = 'stremio-web-view';
 
   // Toggle between Direct Link and Search
-  bool _isDirectLink = true;
+  // Padrão: Busca (false), pois deep link direto (true) falha sem IMDB/Kitsu ID mapeado.
+  bool _isDirectLink = false;
 
   @override
   void initState() {
